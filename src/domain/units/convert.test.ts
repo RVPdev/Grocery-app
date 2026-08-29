@@ -1,5 +1,5 @@
 import { toGrams } from './convert';
-import { oats } from '../testing/fixtures';
+import { oats, onion, water } from '../testing/fixtures';
 
 describe('toGrams — mass', () => {
   it('converts kilograms to grams', () => {
@@ -40,7 +40,6 @@ describe('toGrams — volume', () => {
   });
 
   it('reports NO_PORTION_DATA when the ingredient has no volume portion', () => {
-    const { water } = require('../testing/fixtures');
     const unit = { kind: 'volume', symbol: 'cup' } as const;
     const r = toGrams(1, unit, water);
     expect(r).toEqual({
@@ -52,13 +51,11 @@ describe('toGrams — volume', () => {
 
 describe('toGrams — count', () => {
   it('multiplies a matching count portion', () => {
-    const { onion } = require('../testing/fixtures');
     const r = toGrams(2, { kind: 'count', label: 'medium' }, onion);
     expect(r).toEqual({ ok: true, value: 220 });
   });
 
   it('reports NO_PORTION_DATA when no label matches', () => {
-    const { onion } = require('../testing/fixtures');
     const unit = { kind: 'count', label: 'jumbo' } as const;
     const r = toGrams(1, unit, onion);
     expect(r).toEqual({
