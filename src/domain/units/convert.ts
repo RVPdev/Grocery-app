@@ -41,5 +41,15 @@ export function toGrams(
     return ok((requestedMl / portionMl) * portion.gramsPerUnit);
   }
 
+  if (unit.kind === 'count') {
+    const portion = ingredient.portions.find(
+      (p) => p.unit.kind === 'count' && p.unit.label === unit.label,
+    );
+    if (!portion) {
+      return err({ code: 'NO_PORTION_DATA', ingredientId: ingredient.id, unit });
+    }
+    return ok(amount * portion.gramsPerUnit);
+  }
+
   return err({ code: 'NO_PORTION_DATA', ingredientId: ingredient.id, unit });
 }

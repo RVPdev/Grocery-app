@@ -49,3 +49,21 @@ describe('toGrams — volume', () => {
     });
   });
 });
+
+describe('toGrams — count', () => {
+  it('multiplies a matching count portion', () => {
+    const { onion } = require('../testing/fixtures');
+    const r = toGrams(2, { kind: 'count', label: 'medium' }, onion);
+    expect(r).toEqual({ ok: true, value: 220 });
+  });
+
+  it('reports NO_PORTION_DATA when no label matches', () => {
+    const { onion } = require('../testing/fixtures');
+    const unit = { kind: 'count', label: 'jumbo' } as const;
+    const r = toGrams(1, unit, onion);
+    expect(r).toEqual({
+      ok: false,
+      error: { code: 'NO_PORTION_DATA', ingredientId: onion.id, unit },
+    });
+  });
+});
