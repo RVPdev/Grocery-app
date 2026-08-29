@@ -119,7 +119,8 @@ type Nutrition = {
 }
 
 type Portion = {
-  label: string          // "cup, chopped" | "medium" | "tbsp"
+  label: string          // display text: "cup, chopped" | "medium"
+  unit: Unit             // structured: { kind: 'volume', symbol: 'cup' }
   gramsPerUnit: number   // 160
 }
 
@@ -215,10 +216,11 @@ count→mass conversions are ingredient-specific (1 cup of water ≈ 236 g, 1 cu
 flour ≈ 120 g, 1 cup of honey ≈ 340 g). There is no universal `cupsToGrams()`.
 
 1. **mass** — pure arithmetic against fixed factors. Ingredient irrelevant. Always succeeds.
-2. **volume** — find any volume `Portion` on the ingredient (e.g. `"cup" = 120 g`),
+2. **volume** — find any `Portion` whose `unit.kind === 'volume'` (e.g. `"cup" = 120 g`),
    convert the requested amount into that portion's unit by pure volume ratio
    (`4 tbsp = 0.25 cup`), then multiply (`0.25 × 120 = 30 g`).
-3. **count** — match a `Portion` by label (`"medium" = 110 g`), multiply.
+3. **count** — match a `Portion` whose `unit.kind === 'count'` and whose
+   `unit.label` equals the requested label (`"medium" = 110 g`), multiply.
 4. **otherwise** — return `NO_PORTION_DATA`.
 
 Only **one** volume portion per ingredient is ever required, because volume↔volume
@@ -234,6 +236,13 @@ conversion is universal. USDA's "1 cup" entry yields tbsp, tsp, ml and floz for 
 | lb | 453.59237 | tbsp | 14.78676478125 |
 | | | floz | 29.5735295625 |
 | | | cup | 236.5882365 |
+
+`Portion` carries a structured `unit` as well as its display `label` so that
+conversion never parses free text at runtime. Mapping USDA's portion descriptions
+("1 cup, chopped") onto structured units is the job of the build-time import script;
+portions whose description cannot be mapped are imported with their label only and
+are unusable for conversion, which is correct — they fall through to
+`NO_PORTION_DATA`.
 
 **Ratio-based conversion is required, not absolute-ml conversion.** The US customary
 cup (236.5882365 ml) differs from the US *legal* cup (240 ml) used in nutrition
