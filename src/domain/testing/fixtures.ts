@@ -1,4 +1,6 @@
 import type { Ingredient } from '../ingredients/types';
+import type { Quantity } from '../units/types';
+import type { Recipe } from '../recipes/types';
 
 export const oats: Ingredient = {
   id: 'usda:169705',
@@ -23,4 +25,17 @@ export const water: Ingredient = {
   nutritionPer100g: { kcal: 0, proteinG: 0, carbsG: 0, fatG: 0 },
   portions: [],
   source: 'usda',
+};
+
+export const grams = (n: number): Quantity => ({
+  grams: n,
+  input: { amount: n, unit: { kind: 'mass', symbol: 'g' } },
+});
+
+export const porridge: Recipe = {
+  id: 'recipe-1',
+  name: 'Porridge',
+  servings: 2,
+  ingredients: [{ ingredientId: oats.id, quantity: grams(200) }],
+  steps: ['Combine and simmer.'],
 };
