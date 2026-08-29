@@ -4,3 +4,9 @@ dist/
 web-build/
 *.log
 .DS_Store
+
+# Claude Code / agent tooling
+.claude/
+
+# Superpowers planning docs
+docs/superpowers/
