@@ -7,6 +7,3 @@ web-build/
 
 # Claude Code / agent tooling
 .claude/
-
-# Superpowers planning docs
-docs/superpowers/
