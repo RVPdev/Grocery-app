@@ -20,6 +20,7 @@
 - **Expected failures return `Result`; only genuine emergencies throw.** This plan's `RecipeRepository` interface (per spec section 7) returns plain `Promise`s with no `Result` wrapper — disk/database failure here is a genuine emergency (corrupted bundled data, full disk), not an expected outcome a caller should branch on.
 - **Ratio-based volume conversion, never absolute-ml-and-density.** This plan does not do unit conversion itself (that's `toGrams` in `src/domain/units/convert.ts`, already built) — it only detects which `Unit` a USDA portion describes, which `toGrams` then uses.
 - **Node 26 / npm.** No bun, pnpm, or yarn on this machine.
+- **Every relative *value* import between files under `scripts/usda-import/*.ts` needs an explicit `.ts` extension** (e.g. `from './parseCsv.ts'`, not `from './parseCsv'`) — confirmed empirically: Node's native TypeScript execution (`node file.ts`) requires it for ESM resolution, while Jest does not, so a missing extension silently passes every test and only fails when a script is actually run directly with `node`. `import type` statements are erased before resolution and are exempt. This does not apply to `src/domain/` or `src/data/`, which never run under plain `node`.
 - **Ids are permanent.** USDA ingredients use `usda:<fdcId>`; this plan generates that id at import time and never changes it.
 - **USDA FoodData Central data is public domain (CC0 1.0)**, confirmed during research for this plan. USDA requests — does not require — attribution as "FoodData Central." This plan's import script includes that attribution as a code comment; no licence blocker exists.
 
@@ -518,7 +519,7 @@ Create `scripts/usda-import/assemblePortions.ts`:
 
 ```ts
 import type { Portion } from '../../src/domain/ingredients/types';
-import { detectUnitFromText } from './detectUnit';
+import { detectUnitFromText } from './detectUnit.ts';
 import type { FoodPortionRow } from './types';
 
 export function assemblePortions(portionRows: FoodPortionRow[]): Portion[] {
@@ -685,9 +686,9 @@ Create `scripts/usda-import/loadSrLegacyFoods.ts`:
 ```ts
 import { join } from 'node:path';
 import type { Ingredient } from '../../src/domain/ingredients/types';
-import { parseCsvFile } from './parseCsv';
-import { buildNutrientIdMap, extractNutrition } from './extractNutrition';
-import { assemblePortions } from './assemblePortions';
+import { parseCsvFile } from './parseCsv.ts';
+import { buildNutrientIdMap, extractNutrition } from './extractNutrition.ts';
+import { assemblePortions } from './assemblePortions.ts';
 import type { FoodNutrientRow, FoodPortionRow, FoodRow, NutrientRow } from './types';
 
 export function loadSrLegacyFoods(dataDir: string): Ingredient[] {
@@ -828,8 +829,8 @@ Expected: PASS, 2 tests.
 Create `scripts/usda-import/reportCoverage.ts` (not unit tested — it's a one-shot CLI report, not reusable logic):
 
 ```ts
-import { loadSrLegacyFoods } from './loadSrLegacyFoods';
-import { analyzeCoverage } from './analyzeCoverage';
+import { loadSrLegacyFoods } from './loadSrLegacyFoods.ts';
+import { analyzeCoverage } from './analyzeCoverage.ts';
 
 const dataDir = process.argv[2];
 if (!dataDir) {
@@ -1066,8 +1067,8 @@ Create `scripts/usda-import/import.ts`:
 // USDA FoodData Central data is public domain (CC0 1.0); USDA requests,
 // but does not require, attribution as "FoodData Central".
 // https://fdc.nal.usda.gov
-import { loadSrLegacyFoods } from './loadSrLegacyFoods';
-import { buildDatabase } from './buildDatabase';
+import { loadSrLegacyFoods } from './loadSrLegacyFoods.ts';
+import { buildDatabase } from './buildDatabase.ts';
 
 const dataDir = process.argv[2];
 const outPath = process.argv[3] ?? './assets/usda.db';
@@ -1086,10 +1087,10 @@ console.log(`Wrote ${outPath}`);
 
 - [ ] **Step 2: Add the npm script**
 
-Add to `package.json`'s `"scripts"` block (use whichever flag form Task 1 Step 1/2 confirmed works on this machine — shown here with both flags; drop whichever wasn't needed):
+Add to `package.json`'s `"scripts"` block. Task 1 confirmed neither flag is needed on this machine (Node v26.7.0 strips types and supports `node:sqlite` unflagged):
 
 ```json
-"import:usda": "node --experimental-strip-types --experimental-sqlite scripts/usda-import/import.ts"
+"import:usda": "node scripts/usda-import/import.ts"
 ```
 
 - [ ] **Step 3: Run it for real**
