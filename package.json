@@ -25,7 +25,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "test": "jest",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "import:usda": "node scripts/usda-import/import.ts"
   },
   "private": true,
   "jest": {
