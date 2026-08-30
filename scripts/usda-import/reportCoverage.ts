@@ -1,5 +1,5 @@
-import { loadSrLegacyFoods } from './loadSrLegacyFoods';
-import { analyzeCoverage } from './analyzeCoverage';
+import { loadSrLegacyFoods } from './loadSrLegacyFoods.ts';
+import { analyzeCoverage } from './analyzeCoverage.ts';
 
 const dataDir = process.argv[2];
 if (!dataDir) {

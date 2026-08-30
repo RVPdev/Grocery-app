@@ -1,8 +1,8 @@
 import { join } from 'node:path';
 import type { Ingredient } from '../../src/domain/ingredients/types';
-import { parseCsvFile } from './parseCsv';
-import { buildNutrientIdMap, extractNutrition } from './extractNutrition';
-import { assemblePortions } from './assemblePortions';
+import { parseCsvFile } from './parseCsv.ts';
+import { buildNutrientIdMap, extractNutrition } from './extractNutrition.ts';
+import { assemblePortions } from './assemblePortions.ts';
 import type { FoodNutrientRow, FoodPortionRow, FoodRow, NutrientRow } from './types';
 
 export function loadSrLegacyFoods(dataDir: string): Ingredient[] {

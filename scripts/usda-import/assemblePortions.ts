@@ -1,5 +1,5 @@
 import type { Portion } from '../../src/domain/ingredients/types';
-import { detectUnitFromText } from './detectUnit';
+import { detectUnitFromText } from './detectUnit.ts';
 import type { FoodPortionRow } from './types';
 
 export function assemblePortions(portionRows: FoodPortionRow[]): Portion[] {
