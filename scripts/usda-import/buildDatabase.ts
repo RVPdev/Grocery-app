@@ -1,7 +1,12 @@
 import { DatabaseSync } from 'node:sqlite';
+import { rmSync } from 'node:fs';
 import type { Ingredient } from '../../src/domain/ingredients/types';
 
 export function buildDatabase(ingredients: Ingredient[], outPath: string): void {
+  // Rebuilding is expected to overwrite a previously-built database at the
+  // same path (e.g. re-running the import after a fix); without this, the
+  // CREATE TABLE statements below fail because the tables already exist.
+  rmSync(outPath, { force: true });
   const db = new DatabaseSync(outPath);
 
   db.exec(`

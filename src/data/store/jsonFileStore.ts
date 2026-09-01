@@ -5,8 +5,6 @@ export type UserData = {
   recipes: Recipe[];
 };
 
-const EMPTY_USER_DATA: UserData = { recipes: [] };
-
 function userDataPath(dir: string): string {
   return `${dir}/user-data.json`;
 }
@@ -18,7 +16,7 @@ function tempPath(dir: string): string {
 export async function readUserData(io: FileIO, dir: string): Promise<UserData> {
   const path = userDataPath(dir);
   if (!(await io.exists(path))) {
-    return EMPTY_USER_DATA;
+    return { recipes: [] };
   }
   const content = await io.readText(path);
   return JSON.parse(content) as UserData;

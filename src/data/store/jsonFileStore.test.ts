@@ -41,6 +41,13 @@ describe('jsonFileStore', () => {
     expect(await readUserData(nodeFileIO, dir)).toEqual({ recipes: [] });
   });
 
+  it('returns a fresh object on each empty-store read, not a shared reference', async () => {
+    const first = await readUserData(nodeFileIO, dir);
+    const second = await readUserData(nodeFileIO, dir);
+    expect(first).not.toBe(second);
+    expect(first.recipes).not.toBe(second.recipes);
+  });
+
   it('round-trips a write through a read', async () => {
     await writeUserData(nodeFileIO, dir, { recipes: [porridge] });
     expect(await readUserData(nodeFileIO, dir)).toEqual({ recipes: [porridge] });

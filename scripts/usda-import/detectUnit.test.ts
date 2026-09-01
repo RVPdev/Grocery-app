@@ -25,4 +25,32 @@ describe('detectUnitFromText', () => {
     expect(detectUnitFromText('')).toBeNull();
     expect(detectUnitFromText('   ')).toBeNull();
   });
+
+  it('does not claim "bag (7 oz)" as mass just because "oz" appears in a parenthetical', () => {
+    expect(detectUnitFromText('bag (7 oz)')).toEqual({ kind: 'count', label: 'bag (7 oz)' });
+  });
+
+  it('does not claim "bar (1 oz)" as mass', () => {
+    expect(detectUnitFromText('bar (1 oz)')).toEqual({ kind: 'count', label: 'bar (1 oz)' });
+  });
+
+  it('does not claim "packet (.75 oz)" as mass', () => {
+    expect(detectUnitFromText('packet (.75 oz)')).toEqual({ kind: 'count', label: 'packet (.75 oz)' });
+  });
+
+  it('does not claim a yield parenthetical mentioning grams as mass', () => {
+    expect(detectUnitFromText('steak (yield from 186 g raw meat)')).toEqual({
+      kind: 'count',
+      label: 'steak (yield from 186 g raw meat)',
+    });
+  });
+
+  it('does not claim a yield parenthetical mentioning pounds as mass, and stops the leading segment at the first comma', () => {
+    expect(
+      detectUnitFromText('piece, cooked (yield from 1 lb unheated table spread)'),
+    ).toEqual({
+      kind: 'count',
+      label: 'piece, cooked (yield from 1 lb unheated table spread)',
+    });
+  });
 });

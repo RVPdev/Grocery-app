@@ -11,7 +11,8 @@ const ingredients = loadSrLegacyFoods(dataDir);
 const report = analyzeCoverage(ingredients);
 
 console.log(`Total foods: ${report.total}`);
-console.log(`With any usable portion: ${report.withAnyPortion} (${pct(report.withAnyPortion, report.total)})`);
+console.log(`With any portion (incl. mass-only): ${report.withAnyPortion} (${pct(report.withAnyPortion, report.total)})`);
+console.log(`With a usable (volume or count) portion: ${report.withUsablePortion} (${pct(report.withUsablePortion, report.total)})`);
 console.log(`With a volume portion: ${report.withVolumePortion} (${pct(report.withVolumePortion, report.total)})`);
 
 function pct(n: number, total: number): string {
