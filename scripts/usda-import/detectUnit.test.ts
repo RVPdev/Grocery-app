@@ -53,4 +53,25 @@ describe('detectUnitFromText', () => {
       label: 'piece, cooked (yield from 1 lb unheated table spread)',
     });
   });
+
+  it('detects mass when a unit word is followed by a trailing descriptive word with no separator', () => {
+    expect(detectUnitFromText('oz bar')).toEqual({ kind: 'mass', symbol: 'oz' });
+  });
+
+  it('detects volume when a unit word is followed by a trailing descriptive word with no separator', () => {
+    expect(detectUnitFromText('cup chips')).toEqual({ kind: 'volume', symbol: 'cup' });
+  });
+
+  it('detects volume for another "cup <word>" trailing-word case', () => {
+    expect(detectUnitFromText('cup slices')).toEqual({ kind: 'volume', symbol: 'cup' });
+  });
+
+  it('detects mass for "oz <word>" trailing-word cases regardless of the trailing word', () => {
+    expect(detectUnitFromText('oz whole')).toEqual({ kind: 'mass', symbol: 'oz' });
+    expect(detectUnitFromText('oz shank')).toEqual({ kind: 'mass', symbol: 'oz' });
+  });
+
+  it('still prefers "fl oz" (volume) over "oz" (mass) when followed by a trailing word', () => {
+    expect(detectUnitFromText('fl oz cup')).toEqual({ kind: 'volume', symbol: 'floz' });
+  });
 });

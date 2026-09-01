@@ -4,39 +4,37 @@ type Rule = { pattern: RegExp; unit: Unit };
 
 // Checked before MASS_RULES: "fl oz" / "fluid ounce" must be claimed as
 // volume before the generic mass "oz" pattern below gets a chance to match.
-// Patterns are anchored (^...$) and tested against the candidate unit token
-// (see extractCandidateToken below), not the whole free-text description —
-// otherwise a unit word appearing anywhere in a parenthetical or trailing
-// clause (e.g. "bag (7 oz)") would wrongly claim the entire description.
+// Patterns are anchored at the START of the candidate unit token (see
+// extractCandidateToken below), with a trailing word boundary (`\b`) rather
+// than a full `^...$` match. This lets a genuine unit word be followed by a
+// trailing descriptive word with no separator (e.g. "oz bar", "cup chips")
+// while still refusing to match a unit word buried inside a different
+// leading word (e.g. "bag (7 oz)" starts with "bag", not a unit) or a
+// look-alike word (`\b` after "oz" does not match "ozempic").
 const VOLUME_RULES: Rule[] = [
-  { pattern: /^cups?$/i, unit: { kind: 'volume', symbol: 'cup' } },
-  { pattern: /^(?:tablespoons?|tbsp)$/i, unit: { kind: 'volume', symbol: 'tbsp' } },
-  { pattern: /^(?:teaspoons?|tsp)$/i, unit: { kind: 'volume', symbol: 'tsp' } },
-  { pattern: /^(?:fluid\s+ounces?|fl\.?\s?oz)$/i, unit: { kind: 'volume', symbol: 'floz' } },
-  { pattern: /^(?:milliliters?|ml)$/i, unit: { kind: 'volume', symbol: 'ml' } },
-  { pattern: /^(?:liters?|l)$/i, unit: { kind: 'volume', symbol: 'l' } },
+  { pattern: /^cups?\b/i, unit: { kind: 'volume', symbol: 'cup' } },
+  { pattern: /^(?:tablespoons?|tbsp)\b/i, unit: { kind: 'volume', symbol: 'tbsp' } },
+  { pattern: /^(?:teaspoons?|tsp)\b/i, unit: { kind: 'volume', symbol: 'tsp' } },
+  { pattern: /^(?:fluid\s+ounces?|fl\.?\s?oz)\b/i, unit: { kind: 'volume', symbol: 'floz' } },
+  { pattern: /^(?:milliliters?|ml)\b/i, unit: { kind: 'volume', symbol: 'ml' } },
+  { pattern: /^(?:liters?|l)\b/i, unit: { kind: 'volume', symbol: 'l' } },
 ];
 
 const MASS_RULES: Rule[] = [
-  { pattern: /^(?:kilograms?|kg)$/i, unit: { kind: 'mass', symbol: 'kg' } },
-  { pattern: /^(?:pounds?|lbs?)$/i, unit: { kind: 'mass', symbol: 'lb' } },
-  { pattern: /^(?:ounces?|oz)$/i, unit: { kind: 'mass', symbol: 'oz' } },
-  { pattern: /^(?:grams?|g)$/i, unit: { kind: 'mass', symbol: 'g' } },
+  { pattern: /^(?:kilograms?|kg)\b/i, unit: { kind: 'mass', symbol: 'kg' } },
+  { pattern: /^(?:pounds?|lbs?)\b/i, unit: { kind: 'mass', symbol: 'lb' } },
+  { pattern: /^(?:ounces?|oz)\b/i, unit: { kind: 'mass', symbol: 'oz' } },
+  { pattern: /^(?:grams?|g)\b/i, unit: { kind: 'mass', symbol: 'g' } },
 ];
 
-// The candidate unit token is the leading segment of the description (up to
-// the first "(" or ",", whichever comes first), with a leading numeric
-// quantity stripped off. This keeps unit detection scoped to what the
-// quantity is actually measured in, rather than matching unit words that
-// happen to appear later in a parenthetical or descriptive clause.
+// The candidate unit token is the description with a leading numeric
+// quantity stripped off. Unlike a naive substring search, the rule patterns
+// above are anchored to the START of this candidate, so a unit word must be
+// what the quantity is actually measured in (not a word appearing later in
+// a parenthetical or descriptive clause) — while still tolerating a trailing
+// descriptive word right after the unit (see the rules' `\b` anchors above).
 function extractCandidateToken(text: string): string {
-  const parenIdx = text.indexOf('(');
-  const commaIdx = text.indexOf(',');
-  let cutIdx = text.length;
-  if (parenIdx !== -1) cutIdx = Math.min(cutIdx, parenIdx);
-  if (commaIdx !== -1) cutIdx = Math.min(cutIdx, commaIdx);
-  const leadingSegment = text.slice(0, cutIdx);
-  return leadingSegment.replace(/^[\d./\s]+/, '').trim();
+  return text.replace(/^[\d./\s]+/, '').trim();
 }
 
 export function detectUnitFromText(rawText: string): Unit | null {
