@@ -15,5 +15,5 @@ module.exports = tseslint.config(
       }],
     },
   },
-  { ignores: ['node_modules/', '.expo/', 'dist/', 'eslint.config.js'] },
+  { ignores: ['node_modules/', '.expo/', 'dist/', 'eslint.config.js', 'metro.config.js'] },
 );
