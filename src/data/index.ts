@@ -1,6 +1,14 @@
 import type { RecipeRepository } from './store/recipeRepository';
 import { createRecipeRepository } from './store/recipeRepository';
 import { expoFileIO, userDataDirectory } from './store/expoFileIO';
+import { createUserIngredientRepository, type UserIngredientRepository } from './store/userIngredientRepository';
+import { createLearnedPortionStore, type LearnedPortionStore } from './store/learnedPortionStore';
+import {
+  resolveIngredient as resolveIngredientWithSources,
+  searchAllIngredients as searchAllIngredientsWithSources,
+  type IngredientSources,
+} from './ingredients';
+import { searchIngredients, getIngredientById } from './usda/database';
 
 export type { RecipeRepository } from './store/recipeRepository';
 export { createRecipeRepository } from './store/recipeRepository';
@@ -14,4 +22,37 @@ export { searchIngredients, getIngredientById } from './usda/database';
 // documentDirectory lives under the '/legacy' subpath.
 export function createDefaultRecipeRepository(): RecipeRepository {
   return createRecipeRepository(expoFileIO, userDataDirectory);
+}
+
+export type { UserIngredientRepository } from './store/userIngredientRepository';
+export { createUserIngredientRepository } from './store/userIngredientRepository';
+export type { LearnedPortionStore } from './store/learnedPortionStore';
+export { createLearnedPortionStore } from './store/learnedPortionStore';
+export type { IngredientSources } from './ingredients';
+
+export function createDefaultUserIngredientRepository(): UserIngredientRepository {
+  return createUserIngredientRepository(expoFileIO, userDataDirectory);
+}
+
+export function createDefaultLearnedPortionStore(): LearnedPortionStore {
+  return createLearnedPortionStore(expoFileIO, userDataDirectory);
+}
+
+const defaultUserIngredientRepository = createDefaultUserIngredientRepository();
+const defaultLearnedPortionStore = createDefaultLearnedPortionStore();
+
+export const defaultIngredientSources: IngredientSources = {
+  getUsdaIngredient: getIngredientById,
+  searchUsdaIngredients: searchIngredients,
+  getUserIngredients: () => defaultUserIngredientRepository.getAll(),
+  getLearnedPortionsFor: (id) => defaultLearnedPortionStore.getFor(id),
+};
+
+// Bound convenience functions — the ones UI code should import.
+export async function resolveIngredient(id: string) {
+  return resolveIngredientWithSources(defaultIngredientSources, id);
+}
+
+export async function searchAllIngredients(query: string) {
+  return searchAllIngredientsWithSources(defaultIngredientSources, query);
 }
