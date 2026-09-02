@@ -38,7 +38,7 @@ export function RecipeDetailScreen() {
     return () => {
       cancelled = true;
     };
-  }, [recipe?.id]);
+  }, [recipe?.id, recipe?.ingredients]);
 
   if (!recipe) {
     return (

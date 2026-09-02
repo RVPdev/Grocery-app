@@ -122,5 +122,8 @@ describe('RecipeDetailScreen', () => {
 
     expect(saveCalls).toHaveLength(1);
     expect(saveCalls[0].ingredients).toEqual([]);
+
+    const textAfterRemoval = tree!.root.findAllByType(Text).map((n) => n.props.children).join(' ');
+    expect(textAfterRemoval).not.toContain('ingredient was removed');
   });
 });
