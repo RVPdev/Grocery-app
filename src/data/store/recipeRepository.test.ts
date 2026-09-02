@@ -3,8 +3,10 @@ import * as fs from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createRecipeRepository } from './recipeRepository';
+import { writeUserData } from './jsonFileStore';
 import type { FileIO } from './fileIO';
 import type { Recipe } from '../../domain/recipes/types';
+import type { MealPlan } from '../../domain/plan/types';
 
 const nodeFileIO: FileIO = {
   async exists(path) {
@@ -69,5 +71,21 @@ describe('createRecipeRepository', () => {
     await repo.save(soup);
     await repo.delete(porridge.id);
     expect(await repo.getAll()).toEqual([soup]);
+  });
+
+  it('saving a recipe preserves an already-stored plan, user ingredients, and learned portions', async () => {
+    const plan: MealPlan = { id: 'default', name: 'This Week', meals: [{ recipeId: 'recipe-2', servings: 3 }] };
+    await writeUserData(nodeFileIO, dir, {
+      recipes: [soup], mealPlan: plan,
+      userIngredients: [{ id: 'user:1', name: 'Custom', nutritionPer100g: { kcal: 1, proteinG: 1, carbsG: 1, fatG: 1 }, portions: [], source: 'user' }],
+      learnedPortions: { 'usda:1': [{ label: '1 cup', unit: { kind: 'volume', symbol: 'cup' }, gramsPerUnit: 100 }] },
+    });
+    const repo = createRecipeRepository(nodeFileIO, dir);
+    await repo.save(porridge);
+
+    const raw = JSON.parse(await nodeFileIO.readText(`${dir}/user-data.json`));
+    expect(raw.mealPlan).toEqual(plan);
+    expect(raw.userIngredients).toHaveLength(1);
+    expect(raw.learnedPortions).toEqual({ 'usda:1': [{ label: '1 cup', unit: { kind: 'volume', symbol: 'cup' }, gramsPerUnit: 100 }] });
   });
 });
