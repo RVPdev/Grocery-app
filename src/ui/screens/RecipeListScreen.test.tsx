@@ -6,10 +6,18 @@ import { RecipeProvider } from '../context/RecipeContext';
 import type { RecipeRepository } from '../../data/index';
 import type { Recipe } from '../../domain/recipes/types';
 
-jest.mock('expo-router', () => ({
-  Link: ({ children }: { href: string; children: React.ReactNode }) => children,
-  useRouter: () => ({ push: jest.fn() }),
-}));
+jest.mock('expo-router');
+
+import * as expoRouter from 'expo-router';
+
+const pushMock = jest.fn();
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(expoRouter.useRouter as any).mockReturnValue({ push: pushMock });
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(expoRouter.Link as any).mockImplementation(
+  ({ children }: { href: string; children: React.ReactNode }) => children
+);
 
 jest.mock('react-native/Libraries/Lists/FlatList', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -59,6 +67,10 @@ function fakeRepository(initial: Recipe[]): RecipeRepository {
 }
 
 describe('RecipeListScreen', () => {
+  beforeEach(() => {
+    pushMock.mockClear();
+  });
+
   it('renders each recipe name', async () => {
     let tree: renderer.ReactTestRenderer;
     await act(async () => {
@@ -95,5 +107,20 @@ describe('RecipeListScreen', () => {
       );
     });
     expect(tree!.root.findAllByType(Pressable)).toHaveLength(1);
+  });
+
+  it('navigates to the recipe detail route when a row is pressed', async () => {
+    let tree: renderer.ReactTestRenderer;
+    await act(async () => {
+      tree = renderer.create(
+        <RecipeProvider repository={fakeRepository([porridge])}>
+          <RecipeListScreen />
+        </RecipeProvider>,
+      );
+    });
+    act(() => {
+      tree!.root.findAllByType(Pressable)[0].props.onPress();
+    });
+    expect(pushMock).toHaveBeenCalledWith('/recipe-1');
   });
 });
