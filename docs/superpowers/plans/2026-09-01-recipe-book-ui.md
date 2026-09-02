@@ -893,7 +893,6 @@ export class ErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: unknown): void {
-    // eslint-disable-next-line no-console -- last-resort emergency logging per spec §8
     console.error('Unhandled error caught by ErrorBoundary:', error);
   }
 
