@@ -6,6 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "scheme": "macrorecipeapp",
     "ios": {
       "supportsTablet": true
     },
@@ -23,7 +24,12 @@
     },
     "plugins": [
       "expo-sqlite",
-      "expo-asset"
-    ]
+      "expo-asset",
+      "expo-router",
+      "expo-status-bar"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
   }
 }
