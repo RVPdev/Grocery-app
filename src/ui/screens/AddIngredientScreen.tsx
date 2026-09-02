@@ -5,7 +5,7 @@ import { randomUUID } from 'expo-crypto';
 import { useIngredients } from '../context/IngredientContext';
 import { useDraftRecipe } from '../context/DraftRecipeContext';
 import { toGrams } from '../../domain/units/convert';
-import type { Ingredient } from '../../domain/ingredients/types';
+import type { Ingredient, Portion } from '../../domain/ingredients/types';
 import type { MassSymbol, Unit, VolumeSymbol } from '../../domain/units/types';
 
 type Step = 'search' | 'custom-create' | 'amount' | 'learn-portion';
@@ -153,11 +153,18 @@ export function AddIngredientScreen() {
             onPress={async () => {
               const gramsPerUnit = Number(gramsPerUnitText);
               if (!Number.isFinite(gramsPerUnit) || gramsPerUnit <= 0) return;
-              await learnPortion(selected.id, {
+              const newPortion: Portion = {
                 label: unitLabel(chosenUnit),
                 unit: chosenUnit,
                 gramsPerUnit,
-              });
+              };
+              await learnPortion(selected.id, newPortion);
+              // Merge the newly-taught portion into local state so the retry
+              // on the amount step sees it — toGrams only reads
+              // ingredient.portions and has no knowledge of the persisted
+              // store, so without this the same unit would hit
+              // NO_PORTION_DATA again and bounce back here forever.
+              setSelected({ ...selected, portions: [...selected.portions, newPortion] });
               setStep('amount');
             }}
           >
