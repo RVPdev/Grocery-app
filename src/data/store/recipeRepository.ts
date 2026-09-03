@@ -17,12 +17,12 @@ export function createRecipeRepository(io: FileIO, dir: string): RecipeRepositor
     async save(recipe: Recipe) {
       const data = await readUserData(io, dir);
       const others = data.recipes.filter((r) => r.id !== recipe.id);
-      await writeUserData(io, dir, { recipes: [...others, recipe] });
+      await writeUserData(io, dir, { ...data, recipes: [...others, recipe] });
     },
     async delete(id: string) {
       const data = await readUserData(io, dir);
       const remaining = data.recipes.filter((r) => r.id !== id);
-      await writeUserData(io, dir, { recipes: remaining });
+      await writeUserData(io, dir, { ...data, recipes: remaining });
     },
   };
 }

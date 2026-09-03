@@ -1,30 +1,27 @@
 import * as SQLite from 'expo-sqlite';
-import { Asset } from 'expo-asset';
-import * as FileSystem from 'expo-file-system/legacy';
+import { importDatabaseFromAssetAsync } from 'expo-sqlite';
 import type { Ingredient } from '../../domain/ingredients/types';
 import {
   assembleIngredient, buildSearchQuery, type IngredientRow, type PortionRow,
 } from './mapRow';
 
-const DB_NAME = 'usda.db';
+const DB_NAME = 'usda-v1.db';
 
 async function ensureDatabaseCopied(): Promise<void> {
-  const sqliteDir = `${FileSystem.documentDirectory}SQLite`;
-  const dirInfo = await FileSystem.getInfoAsync(sqliteDir);
-  if (!dirInfo.exists) {
-    await FileSystem.makeDirectoryAsync(sqliteDir, { intermediates: true });
-  }
-
-  const dbPath = `${sqliteDir}/${DB_NAME}`;
-  const dbInfo = await FileSystem.getInfoAsync(dbPath);
-  if (dbInfo.exists) return;
-
+  // expo-sqlite's own asset-import primitive -- the same one SQLiteProvider's
+  // `assetSource` prop uses internally -- not expo-file-system's generic
+  // copyAsync/makeDirectoryAsync. Those generic calls are blocked from writing
+  // into SQLite.defaultDatabaseDirectory under Expo Go (that directory lives
+  // outside the sandboxed per-experience storage the generic file-system
+  // module is scoped to), while this native import path is specifically
+  // allowed to. Its only idempotence check is whether a file already exists
+  // at the target path, and the copy itself is a plain stream copy, not
+  // atomic (confirmed against the native Android source) -- so DB_NAME is
+  // deliberately versioned. Bump it whenever assets/usda.db is rebuilt: that
+  // forces a fresh copy on every device rather than relying on any
+  // atomicity guarantee we don't actually have.
   // eslint-disable-next-line @typescript-eslint/no-require-imports -- Metro requires a literal require() to bundle a static asset.
-  const [asset] = await Asset.loadAsync(require('../../../assets/usda.db'));
-  if (!asset.localUri) {
-    throw new Error('Bundled USDA database asset failed to resolve a local URI.');
-  }
-  await FileSystem.copyAsync({ from: asset.localUri, to: dbPath });
+  await importDatabaseFromAssetAsync(DB_NAME, { assetId: require('../../../assets/usda.db') });
 }
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
