@@ -24,7 +24,14 @@ async function ensureDatabaseCopied(): Promise<void> {
   if (!asset.localUri) {
     throw new Error('Bundled USDA database asset failed to resolve a local URI.');
   }
-  await FileSystem.copyAsync({ from: asset.localUri, to: dbPath });
+
+  // Copy to a temp path and move into place only once the copy fully succeeds,
+  // so an interrupted copy (e.g. a flaky connection while fetching the asset)
+  // never leaves a broken file at dbPath that ensureDatabaseCopied would then
+  // treat as "already copied" on every future launch.
+  const tmpPath = `${dbPath}.tmp`;
+  await FileSystem.copyAsync({ from: asset.localUri, to: tmpPath });
+  await FileSystem.moveAsync({ from: tmpPath, to: dbPath });
 }
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
