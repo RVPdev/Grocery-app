@@ -32,7 +32,9 @@ export function RecipeEditScreen() {
       <Text style={styles.label}>Ingredients</Text>
       {draft.ingredientLines.map((line) => (
         <View key={line.ingredientId} style={styles.ingredientRow}>
-          <Text>{line.quantity.input.amount} — {line.ingredientName}</Text>
+          <Text style={styles.ingredientRowText} numberOfLines={1} ellipsizeMode="tail">
+            {line.quantity.input.amount} — {line.ingredientName}
+          </Text>
           <Pressable onPress={() => removeIngredientLine(line.ingredientId)}>
             <Text>Remove</Text>
           </Pressable>
@@ -60,7 +62,8 @@ const styles = StyleSheet.create({
   label: { marginTop: 12, fontSize: 14, fontWeight: '600' },
   input: { borderWidth: StyleSheet.hairlineWidth, borderColor: '#ccc', padding: 8, marginTop: 4 },
   multiline: { minHeight: 80, textAlignVertical: 'top' },
-  ingredientRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 },
+  ingredientRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 6 },
+  ingredientRowText: { flex: 1, marginRight: 8 },
   addIngredientButton: { marginTop: 8, padding: 12, alignItems: 'center' },
   saveButton: { marginTop: 24, padding: 12, alignItems: 'center' },
 });
