@@ -9,7 +9,10 @@ import {
 const DB_NAME = 'usda.db';
 
 async function ensureDatabaseCopied(): Promise<void> {
-  const sqliteDir = `${FileSystem.documentDirectory}SQLite`;
+  // Must match wherever SQLite.openDatabaseAsync(DB_NAME) actually looks: its
+  // own defaultDatabaseDirectory constant, not a hand-built equivalent of it.
+  // The two are not guaranteed to agree with expo-file-system's documentDirectory.
+  const sqliteDir = SQLite.defaultDatabaseDirectory;
   const dirInfo = await FileSystem.getInfoAsync(sqliteDir);
   if (!dirInfo.exists) {
     await FileSystem.makeDirectoryAsync(sqliteDir, { intermediates: true });
