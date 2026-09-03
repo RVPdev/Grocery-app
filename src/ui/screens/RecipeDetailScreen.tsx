@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useRecipes } from '../context/RecipeContext';
 import { useIngredients } from '../context/IngredientContext';
 import { calculateMacros } from '../../domain/recipes/macros';
@@ -50,9 +50,12 @@ export function RecipeDetailScreen() {
 
   if (!ingredientMap) {
     return (
-      <View style={styles.centered}>
-        <Text>Loading…</Text>
-      </View>
+      <>
+        <Stack.Screen options={{ title: recipe.name }} />
+        <View style={styles.centered}>
+          <Text>Loading…</Text>
+        </View>
+      </>
     );
   }
 
@@ -68,6 +71,7 @@ export function RecipeDetailScreen() {
 
   return (
     <ScrollView style={styles.container}>
+      <Stack.Screen options={{ title: recipe.name }} />
       <Text style={styles.title}>{recipe.name}</Text>
       <Text>{recipe.servings} servings</Text>
 

@@ -13,6 +13,7 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => mockParams,
   useRouter: () => ({ push: jest.fn(), back: jest.fn() }),
   Link: ({ children }: { children: React.ReactNode }) => children,
+  Stack: { Screen: () => null },
 }));
 
 const oats: Ingredient = {

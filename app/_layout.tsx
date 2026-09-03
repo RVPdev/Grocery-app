@@ -12,7 +12,12 @@ export default function RootLayout() {
         <RecipeProvider>
           <IngredientProvider>
             <DraftRecipeProvider>
-              <Stack />
+              <Stack>
+                <Stack.Screen name="index" options={{ title: 'Recipes' }} />
+                <Stack.Screen name="new" options={{ title: 'New Recipe' }} />
+                <Stack.Screen name="add-ingredient" options={{ title: 'Add Ingredient' }} />
+                <Stack.Screen name="[id]/edit" options={{ title: 'Edit Recipe' }} />
+              </Stack>
             </DraftRecipeProvider>
           </IngredientProvider>
         </RecipeProvider>
