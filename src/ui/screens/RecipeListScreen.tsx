@@ -1,10 +1,12 @@
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Link, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRecipes } from '../context/RecipeContext';
 
 export function RecipeListScreen() {
   const { recipes, loading } = useRecipes();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   if (loading) {
     return (
@@ -32,7 +34,7 @@ export function RecipeListScreen() {
           )}
         />
       )}
-      <Link href="/new" style={styles.addButton}>
+      <Link href="/new" style={[styles.addButton, { paddingBottom: 16 + insets.bottom }]}>
         <Text style={styles.addButtonText}>+ New recipe</Text>
       </Link>
     </View>

@@ -1,10 +1,16 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
 import { Text, Pressable } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { RecipeListScreen } from './RecipeListScreen';
 import { RecipeProvider } from '../context/RecipeContext';
 import type { RecipeRepository } from '../../data/index';
 import type { Recipe } from '../../domain/recipes/types';
+
+const testSafeAreaMetrics = {
+  frame: { x: 0, y: 0, width: 320, height: 640 },
+  insets: { top: 0, left: 0, right: 0, bottom: 0 },
+};
 
 jest.mock('expo-router');
 
@@ -75,9 +81,11 @@ describe('RecipeListScreen', () => {
     let tree: renderer.ReactTestRenderer;
     await act(async () => {
       tree = renderer.create(
-        <RecipeProvider repository={fakeRepository([porridge])}>
-          <RecipeListScreen />
-        </RecipeProvider>,
+        <SafeAreaProvider initialMetrics={testSafeAreaMetrics}>
+          <RecipeProvider repository={fakeRepository([porridge])}>
+            <RecipeListScreen />
+          </RecipeProvider>
+        </SafeAreaProvider>,
       );
     });
     const names = tree!.root.findAllByType(Text).map((n) => n.props.children);
@@ -88,9 +96,11 @@ describe('RecipeListScreen', () => {
     let tree: renderer.ReactTestRenderer;
     await act(async () => {
       tree = renderer.create(
-        <RecipeProvider repository={fakeRepository([])}>
-          <RecipeListScreen />
-        </RecipeProvider>,
+        <SafeAreaProvider initialMetrics={testSafeAreaMetrics}>
+          <RecipeProvider repository={fakeRepository([])}>
+            <RecipeListScreen />
+          </RecipeProvider>
+        </SafeAreaProvider>,
       );
     });
     const names = tree!.root.findAllByType(Text).map((n) => n.props.children);
@@ -101,9 +111,11 @@ describe('RecipeListScreen', () => {
     let tree: renderer.ReactTestRenderer;
     await act(async () => {
       tree = renderer.create(
-        <RecipeProvider repository={fakeRepository([porridge])}>
-          <RecipeListScreen />
-        </RecipeProvider>,
+        <SafeAreaProvider initialMetrics={testSafeAreaMetrics}>
+          <RecipeProvider repository={fakeRepository([porridge])}>
+            <RecipeListScreen />
+          </RecipeProvider>
+        </SafeAreaProvider>,
       );
     });
     expect(tree!.root.findAllByType(Pressable)).toHaveLength(1);
@@ -113,9 +125,11 @@ describe('RecipeListScreen', () => {
     let tree: renderer.ReactTestRenderer;
     await act(async () => {
       tree = renderer.create(
-        <RecipeProvider repository={fakeRepository([porridge])}>
-          <RecipeListScreen />
-        </RecipeProvider>,
+        <SafeAreaProvider initialMetrics={testSafeAreaMetrics}>
+          <RecipeProvider repository={fakeRepository([porridge])}>
+            <RecipeListScreen />
+          </RecipeProvider>
+        </SafeAreaProvider>,
       );
     });
     act(() => {
