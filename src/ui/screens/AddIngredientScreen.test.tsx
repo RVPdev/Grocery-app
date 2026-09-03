@@ -70,11 +70,13 @@ function DraftProbe() {
   return <Text testID="draft-lines">{JSON.stringify(draft.ingredientLines)}</Text>;
 }
 
-function TestHarness({ learnedPortionStore }: { learnedPortionStore: LearnedPortionStore }) {
+function TestHarness(
+  { learnedPortionStore, screenKey }: { learnedPortionStore: LearnedPortionStore; screenKey?: string },
+) {
   return (
     <IngredientProvider userIngredientRepository={fakeUserIngredientRepo()} learnedPortionStore={learnedPortionStore}>
       <DraftRecipeProvider>
-        <AddIngredientScreen />
+        <AddIngredientScreen key={screenKey} />
         <DraftProbe />
       </DraftRecipeProvider>
     </IngredientProvider>
@@ -193,5 +195,62 @@ describe('AddIngredientScreen', () => {
     expect(lines).toHaveLength(1);
     expect(lines[0].ingredientId).toBe('usda:2002');
     expect(lines[0].quantity.grams).toBe(500); // 100 ml * 5 g/ml, from the taught portion
+  });
+
+  it('refuses to add an ingredient a second time instead of creating a duplicate line', async () => {
+    const learnedPortionStore = fakeLearnedPortionStore();
+    let tree: renderer.ReactTestRenderer;
+    act(() => {
+      tree = renderer.create(<TestHarness learnedPortionStore={learnedPortionStore} screenKey="first" />);
+    });
+
+    function findPressableByText(text: string) {
+      return tree!.root.findAllByType(Pressable).find((p) => p.findAllByType(Text).some((t) => t.props.children === text));
+    }
+
+    async function addOats(amount: string) {
+      const searchInput = tree!.root.findByType(TextInput);
+      await act(async () => {
+        searchInput.props.onChangeText('oat');
+      });
+      act(() => {
+        findPressableByText('Oats, raw')?.props.onPress();
+      });
+      act(() => {
+        findPressableByText('g')?.props.onPress();
+      });
+      const amountInput = tree!.root.findAllByType(TextInput).find((i) => i.props.keyboardType === 'numeric');
+      act(() => {
+        amountInput?.props.onChangeText(amount);
+      });
+      await act(async () => {
+        await findPressableByText('Add to recipe')?.props.onPress();
+      });
+    }
+
+    await addOats('80');
+    expect(mockBack).toHaveBeenCalledTimes(1);
+
+    // Simulate leaving the screen (real navigation back to the recipe editor)
+    // and opening a fresh "Add ingredient" screen — a new component instance
+    // with reset local state, sharing the same DraftRecipeProvider above the
+    // router, exactly like the real app.
+    act(() => {
+      tree!.update(<TestHarness learnedPortionStore={learnedPortionStore} screenKey="second" />);
+    });
+
+    await addOats('50');
+
+    // Still only the one successful add from before — the second attempt
+    // must be refused, not appended as a duplicate line.
+    expect(mockBack).toHaveBeenCalledTimes(1);
+    expect(
+      tree!.root.findAllByType(Text).some((t) => t.props.children === 'This ingredient is already in the recipe. Remove it first to change the amount.'),
+    ).toBe(true);
+
+    const probe = tree!.root.findAllByType(Text).find((t) => t.props.testID === 'draft-lines');
+    const lines = JSON.parse(probe!.props.children as string);
+    expect(lines).toHaveLength(1);
+    expect(lines[0].quantity.input.amount).toBe(80);
   });
 });

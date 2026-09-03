@@ -33,7 +33,7 @@ function unitLabel(unit: Unit): string {
 export function AddIngredientScreen() {
   const router = useRouter();
   const { search, addUserIngredient, learnPortion } = useIngredients();
-  const { addIngredientLine } = useDraftRecipe();
+  const { draft, addIngredientLine } = useDraftRecipe();
 
   const [step, setStep] = useState<Step>('search');
   const [query, setQuery] = useState('');
@@ -59,6 +59,10 @@ export function AddIngredientScreen() {
 
   function tryConvert(unit: Unit, amount: number) {
     if (!selected) return;
+    if (draft.ingredientLines.some((line) => line.ingredientId === selected.id)) {
+      setConversionError('This ingredient is already in the recipe. Remove it first to change the amount.');
+      return;
+    }
     const result = toGrams(amount, unit, selected);
     if (result.ok) {
       addIngredientLine({
