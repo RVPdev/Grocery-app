@@ -92,4 +92,14 @@ describe('jsonFileStore', () => {
     expect(result.userIngredients).toEqual([userIngredient]);
     expect(result.learnedPortions).toEqual({ 'usda:1001': [learnedPortion] });
   });
+
+  it('defaults fields missing from a file written under an older schema', async () => {
+    await fs.writeFile(join(dir, 'user-data.json'), JSON.stringify({ recipes: [porridge] }), 'utf-8');
+    expect(await readUserData(nodeFileIO, dir)).toEqual({
+      recipes: [porridge],
+      mealPlan: { id: 'default', name: 'This Week', meals: [] },
+      userIngredients: [],
+      learnedPortions: {},
+    });
+  });
 });

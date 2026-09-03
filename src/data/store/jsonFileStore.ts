@@ -33,7 +33,7 @@ export async function readUserData(io: FileIO, dir: string): Promise<UserData> {
     return emptyUserData();
   }
   const content = await io.readText(path);
-  return JSON.parse(content) as UserData;
+  return { ...emptyUserData(), ...JSON.parse(content) } as UserData;
 }
 
 export async function writeUserData(io: FileIO, dir: string, data: UserData): Promise<void> {
