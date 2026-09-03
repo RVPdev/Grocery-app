@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
-import { Text, Pressable } from 'react-native';
+import { Text, Pressable, TextInput } from 'react-native';
 import { RecipeDetailScreen } from './RecipeDetailScreen';
 import { RecipeProvider } from '../context/RecipeContext';
 import { IngredientProvider } from '../context/IngredientContext';
@@ -126,5 +126,29 @@ describe('RecipeDetailScreen', () => {
 
     const textAfterRemoval = tree!.root.findAllByType(Text).map((n) => n.props.children).join(' ');
     expect(textAfterRemoval).not.toContain('ingredient was removed');
+  });
+
+  it('renders the scaled servings count and ingredient amounts when scaled', async () => {
+    mockParams = { id: 'recipe-1' };
+    let tree: renderer.ReactTestRenderer;
+    await act(async () => {
+      tree = renderScreen(porridge);
+    });
+
+    const input = tree!.root.findByType(TextInput);
+    await act(async () => {
+      input.props.onChangeText('6');
+    });
+
+    // A single <Text> can have several JSX-expression children (e.g. `{n} servings`);
+    // React represents those as a children array, and RN renders them concatenated
+    // with no separator. `.join(' ')` across nodes would stringify a nested array via
+    // Array.prototype.toString (comma-joined), turning "6 servings" into "6, servings" --
+    // so flatten each node's own children with '' before joining nodes with a space.
+    const flatten = (value: unknown): string =>
+      Array.isArray(value) ? value.map(flatten).join('') : value == null ? '' : String(value);
+    const text = tree!.root.findAllByType(Text).map((n) => flatten(n.props.children)).join(' ');
+    expect(text).toContain('6 servings');
+    expect(text).toContain('480 g');
   });
 });

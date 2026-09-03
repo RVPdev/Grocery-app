@@ -12,7 +12,7 @@ import type { Recipe } from '../../domain/recipes/types';
 export function RecipeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { recipes, deleteRecipe, addOrUpdateRecipe } = useRecipes();
+  const { recipes, deleteRecipe, addOrUpdateRecipe, loading } = useRecipes();
   const { resolve } = useIngredients();
   const recipe = recipes.find((r) => r.id === id);
   const [ingredientMap, setIngredientMap] = useState<Map<string, Ingredient> | null>(null);
@@ -42,9 +42,12 @@ export function RecipeDetailScreen() {
 
   if (!recipe) {
     return (
-      <View style={styles.centered}>
-        <Text>Recipe not found.</Text>
-      </View>
+      <>
+        <Stack.Screen options={{ title: 'Recipe' }} />
+        <View style={styles.centered}>
+          <Text>{loading ? 'Loading…' : 'Recipe not found.'}</Text>
+        </View>
+      </>
     );
   }
 
@@ -73,7 +76,7 @@ export function RecipeDetailScreen() {
     <ScrollView style={styles.container}>
       <Stack.Screen options={{ title: recipe.name }} />
       <Text style={styles.title}>{recipe.name}</Text>
-      <Text>{recipe.servings} servings</Text>
+      <Text>{(scaled ?? recipe).servings} servings</Text>
 
       {macros.ok ? (
         <Text style={styles.macros}>
