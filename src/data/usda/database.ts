@@ -1,6 +1,5 @@
 import * as SQLite from 'expo-sqlite';
-import { Asset } from 'expo-asset';
-import * as FileSystem from 'expo-file-system/legacy';
+import { importDatabaseFromAssetAsync } from 'expo-sqlite';
 import type { Ingredient } from '../../domain/ingredients/types';
 import {
   assembleIngredient, buildSearchQuery, type IngredientRow, type PortionRow,
@@ -9,32 +8,17 @@ import {
 const DB_NAME = 'usda.db';
 
 async function ensureDatabaseCopied(): Promise<void> {
-  // Must match wherever SQLite.openDatabaseAsync(DB_NAME) actually looks: its
-  // own defaultDatabaseDirectory constant, not a hand-built equivalent of it.
-  // The two are not guaranteed to agree with expo-file-system's documentDirectory.
-  const sqliteDir = SQLite.defaultDatabaseDirectory;
-  const dirInfo = await FileSystem.getInfoAsync(sqliteDir);
-  if (!dirInfo.exists) {
-    await FileSystem.makeDirectoryAsync(sqliteDir, { intermediates: true });
-  }
-
-  const dbPath = `${sqliteDir}/${DB_NAME}`;
-  const dbInfo = await FileSystem.getInfoAsync(dbPath);
-  if (dbInfo.exists) return;
-
+  // expo-sqlite's own asset-import primitive -- the same one SQLiteProvider's
+  // `assetSource` prop uses internally -- not expo-file-system's generic
+  // copyAsync/makeDirectoryAsync. Those generic calls are blocked from writing
+  // into SQLite.defaultDatabaseDirectory under Expo Go (that directory lives
+  // outside the sandboxed per-experience storage the generic file-system
+  // module is scoped to), while this native import path is specifically
+  // allowed to. It's also idempotent (skips the copy if the file is already
+  // there) and atomic on the native side, so we don't need to track that
+  // ourselves.
   // eslint-disable-next-line @typescript-eslint/no-require-imports -- Metro requires a literal require() to bundle a static asset.
-  const [asset] = await Asset.loadAsync(require('../../../assets/usda.db'));
-  if (!asset.localUri) {
-    throw new Error('Bundled USDA database asset failed to resolve a local URI.');
-  }
-
-  // Copy to a temp path and move into place only once the copy fully succeeds,
-  // so an interrupted copy (e.g. a flaky connection while fetching the asset)
-  // never leaves a broken file at dbPath that ensureDatabaseCopied would then
-  // treat as "already copied" on every future launch.
-  const tmpPath = `${dbPath}.tmp`;
-  await FileSystem.copyAsync({ from: asset.localUri, to: tmpPath });
-  await FileSystem.moveAsync({ from: tmpPath, to: dbPath });
+  await importDatabaseFromAssetAsync(DB_NAME, { assetId: require('../../../assets/usda.db') });
 }
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
