@@ -1,6 +1,6 @@
 import type { Portion } from '../../domain/ingredients/types';
 import type { FileIO } from './fileIO';
-import { readUserData, writeUserData } from './jsonFileStore';
+import { readUserData, writeUserData, withUserDataLock } from './jsonFileStore';
 
 export interface LearnedPortionStore {
   getFor(ingredientId: string): Promise<Portion[]>;
@@ -13,12 +13,14 @@ export function createLearnedPortionStore(io: FileIO, dir: string): LearnedPorti
       const data = await readUserData(io, dir);
       return data.learnedPortions[ingredientId] ?? [];
     },
-    async add(ingredientId: string, portion: Portion) {
-      const data = await readUserData(io, dir);
-      const existing = data.learnedPortions[ingredientId] ?? [];
-      await writeUserData(io, dir, {
-        ...data,
-        learnedPortions: { ...data.learnedPortions, [ingredientId]: [...existing, portion] },
+    add(ingredientId: string, portion: Portion) {
+      return withUserDataLock(async () => {
+        const data = await readUserData(io, dir);
+        const existing = data.learnedPortions[ingredientId] ?? [];
+        await writeUserData(io, dir, {
+          ...data,
+          learnedPortions: { ...data.learnedPortions, [ingredientId]: [...existing, portion] },
+        });
       });
     },
   };
