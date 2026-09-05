@@ -35,14 +35,21 @@ describe('planReducer', () => {
 });
 
 function fakeRepository(initial: MealPlan): PlanRepository & { saved: MealPlan[] } {
+  let current = initial;
   const saved: MealPlan[] = [];
   return {
     saved,
     async get() {
-      return initial;
+      return current;
     },
     async save(plan: MealPlan) {
       saved.push(plan);
+      current = plan;
+    },
+    async update(mutate: (plan: MealPlan) => MealPlan) {
+      current = mutate(current);
+      saved.push(current);
+      return current;
     },
   };
 }

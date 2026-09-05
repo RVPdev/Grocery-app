@@ -62,19 +62,16 @@ export function PlanProvider({ children, repository }: ProviderProps) {
     plan: state.plan,
     loading: state.loading,
     async addMeal(meal: PlannedMeal) {
-      const next = planReducer(state, { type: 'ADD_MEAL', meal });
-      await repo.save(next.plan);
-      dispatch({ type: 'ADD_MEAL', meal });
+      const plan = await repo.update((current) => planReducer({ plan: current, loading: false }, { type: 'ADD_MEAL', meal }).plan);
+      dispatch({ type: 'SET_PLAN', plan });
     },
     async removeMeal(recipeId: string) {
-      const next = planReducer(state, { type: 'REMOVE_MEAL', recipeId });
-      await repo.save(next.plan);
-      dispatch({ type: 'REMOVE_MEAL', recipeId });
+      const plan = await repo.update((current) => planReducer({ plan: current, loading: false }, { type: 'REMOVE_MEAL', recipeId }).plan);
+      dispatch({ type: 'SET_PLAN', plan });
     },
     async updateMealServings(recipeId: string, servings: number) {
-      const next = planReducer(state, { type: 'UPDATE_MEAL_SERVINGS', recipeId, servings });
-      await repo.save(next.plan);
-      dispatch({ type: 'UPDATE_MEAL_SERVINGS', recipeId, servings });
+      const plan = await repo.update((current) => planReducer({ plan: current, loading: false }, { type: 'UPDATE_MEAL_SERVINGS', recipeId, servings }).plan);
+      dispatch({ type: 'SET_PLAN', plan });
     },
   };
 

@@ -74,4 +74,21 @@ describe('createPlanRepository', () => {
     expect(raw.userIngredients).toHaveLength(1);
     expect(raw.learnedPortions).toEqual({ 'usda:1': [{ label: '1 cup', unit: { kind: 'volume', symbol: 'cup' }, gramsPerUnit: 100 }] });
   });
+
+  it('update reads the current plan, applies the transform, persists and returns the result atomically', async () => {
+    const repo = createPlanRepository(nodeFileIO, dir);
+    await repo.save({ id: 'default', name: 'This Week', meals: [{ recipeId: 'recipe-1', servings: 2 }] });
+
+    const returned = await repo.update((plan) => ({
+      ...plan,
+      meals: [...plan.meals, { recipeId: 'recipe-2', servings: 3 }],
+    }));
+
+    const expected: MealPlan = {
+      id: 'default', name: 'This Week',
+      meals: [{ recipeId: 'recipe-1', servings: 2 }, { recipeId: 'recipe-2', servings: 3 }],
+    };
+    expect(returned).toEqual(expected);
+    expect(await repo.get()).toEqual(expected);
+  });
 });
