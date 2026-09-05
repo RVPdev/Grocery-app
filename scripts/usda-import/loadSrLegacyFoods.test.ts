@@ -27,6 +27,11 @@ describe('loadSrLegacyFoods', () => {
     expect(ingredients.find((i) => i.id === 'usda:1006')).toBeUndefined();
   });
 
+  it('excludes a manually curated non-ingredient like canned soup', () => {
+    const ingredients = loadSrLegacyFoods(FIXTURE_DIR);
+    expect(ingredients.find((i) => i.id === 'usda:168027')).toBeUndefined();
+  });
+
   it('carries the food description as the name', () => {
     const ingredients = loadSrLegacyFoods(FIXTURE_DIR);
     expect(ingredients[0].name).toBe('Oats, rolled');
