@@ -22,6 +22,11 @@ describe('loadSrLegacyFoods', () => {
     expect(ingredients.find((i) => i.id === 'usda:1004')).toBeDefined();
   });
 
+  it('excludes a finished product like a cookie', () => {
+    const ingredients = loadSrLegacyFoods(FIXTURE_DIR);
+    expect(ingredients.find((i) => i.id === 'usda:1006')).toBeUndefined();
+  });
+
   it('carries the food description as the name', () => {
     const ingredients = loadSrLegacyFoods(FIXTURE_DIR);
     expect(ingredients[0].name).toBe('Oats, rolled');

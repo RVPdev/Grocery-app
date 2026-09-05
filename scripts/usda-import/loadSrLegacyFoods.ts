@@ -5,6 +5,7 @@ import { buildNutrientIdMap, extractNutrition } from './extractNutrition.ts';
 import { assemblePortions } from './assemblePortions.ts';
 import { excludeNonIngredientCategories } from './excludeNonIngredientCategories.ts';
 import { excludeCookedDuplicates } from './excludeCookedDuplicates.ts';
+import { excludeFinishedProducts } from './excludeFinishedProducts.ts';
 import type { FoodCategoryRow, FoodNutrientRow, FoodPortionRow, FoodRow, NutrientRow } from './types';
 
 export function loadSrLegacyFoods(dataDir: string): Ingredient[] {
@@ -14,7 +15,9 @@ export function loadSrLegacyFoods(dataDir: string): Ingredient[] {
   const foodNutrients = parseCsvFile<FoodNutrientRow>(join(dataDir, 'food_nutrient.csv'));
   const foodPortions = parseCsvFile<FoodPortionRow>(join(dataDir, 'food_portion.csv'));
 
-  const foods = excludeCookedDuplicates(excludeNonIngredientCategories(allFoods, categories));
+  const foods = excludeFinishedProducts(
+    excludeCookedDuplicates(excludeNonIngredientCategories(allFoods, categories)),
+  );
 
   const nutrientIdMap = buildNutrientIdMap(nutrients);
   const foodNutrientsByFood = groupBy(foodNutrients, (row) => row.fdc_id);

@@ -5,7 +5,7 @@ import {
   assembleIngredient, buildSearchQuery, type IngredientRow, type PortionRow,
 } from './mapRow';
 
-const DB_NAME = 'usda-v2.db';
+const DB_NAME = 'usda-v3.db';
 
 async function ensureDatabaseCopied(): Promise<void> {
   // expo-sqlite's own asset-import primitive -- the same one SQLiteProvider's

@@ -1,16 +1,19 @@
 import type { FoodCategoryRow, FoodRow } from './types';
 
 // Verified 2026-09-04 against the real SR Legacy food_category.csv (28
-// categories, 2018-04 download): these 4 are the only categories whose
-// foods are prepared dishes/products rather than base recipe ingredients
-// (e.g. "Fast foods, cheeseburger", "Babyfood, apple yogurt dessert,
-// strained"). Every other category — including mixed ones like "Soups,
-// Sauces, and Gravies" — is left alone; splitting those further needs
-// finer-grained rules than a category filter can give.
+// categories, 2018-04 download): these are the categories that are
+// overwhelmingly prepared dishes/products rather than base recipe
+// ingredients (e.g. "Fast foods, cheeseburger", "Snacks, potato chips,
+// plain", "Cereals ready-to-eat, ..."). Categories that genuinely mix
+// ingredients and finished products — Sweets, Baked Products, Dairy and Egg
+// Products, Sausages and Luncheon Meats — can't be excluded wholesale; see
+// excludeFinishedProducts.ts for the item-level filter that handles those.
 const EXCLUDED_CATEGORY_CODES = new Set([
   '0300', // Baby Foods
+  '0800', // Breakfast Cereals
   '2100', // Fast Foods
   '2200', // Meals, Entrees, and Side Dishes
+  '2500', // Snacks
   '3600', // Restaurant Foods
 ]);
 
