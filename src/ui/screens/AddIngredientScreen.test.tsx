@@ -1,7 +1,7 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
 import { Text, TextInput, Pressable } from 'react-native';
-import { AddIngredientScreen } from './AddIngredientScreen';
+import { AddIngredientScreen, availableUnits } from './AddIngredientScreen';
 import { IngredientProvider } from '../context/IngredientContext';
 import { DraftRecipeProvider, useDraftRecipe } from '../context/DraftRecipeContext';
 import type { UserIngredientRepository, LearnedPortionStore } from '../../data/index';
@@ -82,6 +82,25 @@ function TestHarness(
     </IngredientProvider>
   );
 }
+
+describe('availableUnits', () => {
+  it('does not offer two units with the same label when portions have duplicate count-style labels', () => {
+    const ambiguousBar: Ingredient = {
+      id: 'usda:9001', name: 'Ambiguous bar',
+      nutritionPer100g: { kcal: 200, proteinG: 5, carbsG: 20, fatG: 8 },
+      portions: [
+        { label: '1 bar', unit: { kind: 'count', label: 'bar' }, gramsPerUnit: 40 },
+        { label: '1 bar (large)', unit: { kind: 'count', label: 'bar' }, gramsPerUnit: 55 },
+      ],
+      source: 'usda',
+    };
+
+    const units = availableUnits(ambiguousBar);
+    const barUnits = units.filter((u) => u.kind === 'count' && u.label === 'bar');
+
+    expect(barUnits).toHaveLength(1);
+  });
+});
 
 describe('AddIngredientScreen', () => {
   beforeEach(() => {

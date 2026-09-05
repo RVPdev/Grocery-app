@@ -13,14 +13,17 @@ type Step = 'search' | 'custom-create' | 'amount' | 'learn-portion';
 const MASS_UNITS: MassSymbol[] = ['g', 'kg', 'oz', 'lb'];
 const ALL_VOLUME_UNITS: VolumeSymbol[] = ['ml', 'l', 'tsp', 'tbsp', 'cup', 'floz'];
 
-function availableUnits(ingredient: Ingredient): Unit[] {
+export function availableUnits(ingredient: Ingredient): Unit[] {
   const units: Unit[] = MASS_UNITS.map((symbol) => ({ kind: 'mass', symbol }));
   for (const portion of ingredient.portions) {
     if (portion.unit.kind === 'volume' && !units.some((u) => u.kind === 'volume')) {
       units.push(...ALL_VOLUME_UNITS.map((symbol) => ({ kind: 'volume', symbol }) as Unit));
     }
     if (portion.unit.kind === 'count') {
-      units.push(portion.unit);
+      const { label } = portion.unit;
+      if (!units.some((u) => u.kind === 'count' && u.label === label)) {
+        units.push(portion.unit);
+      }
     }
   }
   return units;
