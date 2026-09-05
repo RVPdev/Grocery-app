@@ -17,6 +17,14 @@ export function PlanScreen() {
   const [adding, setAdding] = useState(false);
   const [pickedRecipe, setPickedRecipe] = useState<Recipe | null>(null);
   const [servingsText, setServingsText] = useState('');
+  const [addError, setAddError] = useState<string | null>(null);
+
+  function cancelAdding() {
+    setAdding(false);
+    setPickedRecipe(null);
+    setServingsText('');
+    setAddError(null);
+  }
 
   useEffect(() => {
     const plannedRecipes = plan.meals
@@ -70,8 +78,8 @@ export function PlanScreen() {
                 style={styles.servingsInput}
                 keyboardType="numeric"
                 defaultValue={String(meal.servings)}
-                onChangeText={(text) => {
-                  const parsed = Number(text);
+                onEndEditing={(e) => {
+                  const parsed = Number(e.nativeEvent.text);
                   if (Number.isFinite(parsed) && parsed > 0) {
                     updateMealServings(meal.recipeId, parsed);
                   }
@@ -103,11 +111,15 @@ export function PlanScreen() {
       {adding && !pickedRecipe && (
         <View>
           <Text style={styles.sectionHeading}>Pick a recipe</Text>
+          {availableToAdd.length === 0 && <Text>No recipes yet — create one on the Recipes tab.</Text>}
           {availableToAdd.map((recipe) => (
             <Pressable key={recipe.id} style={styles.row} onPress={() => setPickedRecipe(recipe)}>
               <Text>{recipe.name}</Text>
             </Pressable>
           ))}
+          <Pressable onPress={cancelAdding}>
+            <Text style={styles.link}>Cancel</Text>
+          </Pressable>
         </View>
       )}
 
@@ -121,18 +133,23 @@ export function PlanScreen() {
             onChangeText={setServingsText}
             placeholder={String(pickedRecipe.servings)}
           />
+          {addError && <Text style={styles.error}>{addError}</Text>}
           <Pressable
             style={styles.addButton}
             onPress={async () => {
               const parsed = Number(servingsText);
-              if (!Number.isFinite(parsed) || parsed <= 0) return;
+              if (!Number.isFinite(parsed) || parsed <= 0) {
+                setAddError('Enter a number of servings greater than 0.');
+                return;
+              }
               await addMeal({ recipeId: pickedRecipe.id, servings: parsed });
-              setAdding(false);
-              setPickedRecipe(null);
-              setServingsText('');
+              cancelAdding();
             }}
           >
             <Text>Add to plan</Text>
+          </Pressable>
+          <Pressable onPress={cancelAdding}>
+            <Text style={styles.link}>Cancel</Text>
           </Pressable>
         </View>
       )}
@@ -151,4 +168,5 @@ const styles = StyleSheet.create({
   link: { color: '#0066cc', marginTop: 4 },
   addButton: { padding: 16, alignItems: 'center' },
   sectionHeading: { marginTop: 16, fontSize: 16, fontWeight: '600' },
+  error: { color: '#cc0000', marginTop: 4 },
 });

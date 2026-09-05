@@ -4,6 +4,12 @@ import { readUserData, writeUserData, withUserDataLock } from './jsonFileStore';
 
 export interface PlanRepository {
   get(): Promise<MealPlan>;
+  /**
+   * Overwrites the plan unconditionally. Prefer `update` for any
+   * read-modify-write sequence — computing the next plan from state held
+   * outside this repository's lock reintroduces the stale-write race this
+   * repository exists to close.
+   */
   save(plan: MealPlan): Promise<void>;
   update(mutate: (plan: MealPlan) => MealPlan): Promise<MealPlan>;
 }
