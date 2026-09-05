@@ -126,7 +126,7 @@ export function RecipeDetailScreen() {
         <Text key={i}>{i + 1}. {step}</Text>
       ))}
 
-      <Pressable style={styles.editButton} onPress={() => router.push(`/${recipe.id}/edit`)}>
+      <Pressable style={styles.editButton} onPress={() => router.push(`/recipes/${recipe.id}/edit`)}>
         <Text>Edit</Text>
       </Pressable>
       <Pressable

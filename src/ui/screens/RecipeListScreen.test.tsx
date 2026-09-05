@@ -135,6 +135,6 @@ describe('RecipeListScreen', () => {
     act(() => {
       tree!.root.findAllByType(Pressable)[0].props.onPress();
     });
-    expect(pushMock).toHaveBeenCalledWith('/recipe-1');
+    expect(pushMock).toHaveBeenCalledWith('/recipes/recipe-1');
   });
 });
