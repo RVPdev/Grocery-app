@@ -1,3 +1,6 @@
 fdc_id,data_type,description,food_category_id
-1001,sr_legacy_food,"Oats, rolled",100
-1002,sr_legacy_food,"Peculiar Snack",200
+1001,sr_legacy_food,"Oats, rolled",1
+1002,sr_legacy_food,"Peculiar Snack",1
+1003,sr_legacy_food,"Fast foods, cheeseburger",2
+1004,sr_legacy_food,"Chicken, breast, raw",1
+1005,sr_legacy_food,"Chicken, breast, cooked, roasted",1

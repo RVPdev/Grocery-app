@@ -2,6 +2,16 @@ export type FoodRow = {
   fdc_id: string;
   description: string;
   data_type: string;
+  food_category_id: string;
+};
+
+export type FoodCategoryRow = {
+  id: string;
+  // The stable public identifier for a category (e.g. "2100" for Fast
+  // Foods) — unlike `id`, this survives across USDA dataset snapshots, the
+  // same reasoning nutrient_nbr gets over nutrient.id in extractNutrition.ts.
+  code: string;
+  description: string;
 };
 
 export type NutrientRow = {

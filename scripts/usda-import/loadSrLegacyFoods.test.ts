@@ -4,11 +4,22 @@ import { loadSrLegacyFoods } from './loadSrLegacyFoods';
 const FIXTURE_DIR = join(__dirname, '__fixtures__', 'mini-dataset');
 
 describe('loadSrLegacyFoods', () => {
-  it('loads every food as an Ingredient with usda: id prefix', () => {
+  it('loads every base-ingredient food as an Ingredient with usda: id prefix', () => {
     const ingredients = loadSrLegacyFoods(FIXTURE_DIR);
-    expect(ingredients).toHaveLength(2);
-    expect(ingredients.map((i) => i.id)).toEqual(['usda:1001', 'usda:1002']);
-    expect(ingredients.map((i) => i.source)).toEqual(['usda', 'usda']);
+    expect(ingredients).toHaveLength(3);
+    expect(ingredients.map((i) => i.id)).toEqual(['usda:1001', 'usda:1002', 'usda:1004']);
+    expect(ingredients.map((i) => i.source)).toEqual(['usda', 'usda', 'usda']);
+  });
+
+  it('excludes a food in a non-ingredient category (e.g. Fast Foods)', () => {
+    const ingredients = loadSrLegacyFoods(FIXTURE_DIR);
+    expect(ingredients.find((i) => i.id === 'usda:1003')).toBeUndefined();
+  });
+
+  it('excludes a cooked-form duplicate when a matching raw entry exists', () => {
+    const ingredients = loadSrLegacyFoods(FIXTURE_DIR);
+    expect(ingredients.find((i) => i.id === 'usda:1005')).toBeUndefined();
+    expect(ingredients.find((i) => i.id === 'usda:1004')).toBeDefined();
   });
 
   it('carries the food description as the name', () => {

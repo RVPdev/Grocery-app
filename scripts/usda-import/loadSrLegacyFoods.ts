@@ -3,13 +3,18 @@ import type { Ingredient } from '../../src/domain/ingredients/types';
 import { parseCsvFile } from './parseCsv.ts';
 import { buildNutrientIdMap, extractNutrition } from './extractNutrition.ts';
 import { assemblePortions } from './assemblePortions.ts';
-import type { FoodNutrientRow, FoodPortionRow, FoodRow, NutrientRow } from './types';
+import { excludeNonIngredientCategories } from './excludeNonIngredientCategories.ts';
+import { excludeCookedDuplicates } from './excludeCookedDuplicates.ts';
+import type { FoodCategoryRow, FoodNutrientRow, FoodPortionRow, FoodRow, NutrientRow } from './types';
 
 export function loadSrLegacyFoods(dataDir: string): Ingredient[] {
-  const foods = parseCsvFile<FoodRow>(join(dataDir, 'food.csv'));
+  const allFoods = parseCsvFile<FoodRow>(join(dataDir, 'food.csv'));
+  const categories = parseCsvFile<FoodCategoryRow>(join(dataDir, 'food_category.csv'));
   const nutrients = parseCsvFile<NutrientRow>(join(dataDir, 'nutrient.csv'));
   const foodNutrients = parseCsvFile<FoodNutrientRow>(join(dataDir, 'food_nutrient.csv'));
   const foodPortions = parseCsvFile<FoodPortionRow>(join(dataDir, 'food_portion.csv'));
+
+  const foods = excludeCookedDuplicates(excludeNonIngredientCategories(allFoods, categories));
 
   const nutrientIdMap = buildNutrientIdMap(nutrients);
   const foodNutrientsByFood = groupBy(foodNutrients, (row) => row.fdc_id);
