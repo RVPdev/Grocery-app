@@ -27,14 +27,14 @@ export function RecipeListScreen() {
           data={recipes}
           keyExtractor={(r) => r.id}
           renderItem={({ item }) => (
-            <Pressable style={styles.row} onPress={() => router.push(`/${item.id}`)}>
+            <Pressable style={styles.row} onPress={() => router.push(`/recipes/${item.id}`)}>
               <Text style={styles.rowTitle}>{item.name}</Text>
               <Text style={styles.rowSubtitle}>{item.servings} servings</Text>
             </Pressable>
           )}
         />
       )}
-      <Link href="/new" style={[styles.addButton, { paddingBottom: 16 + insets.bottom }]}>
+      <Link href="/recipes/new" style={[styles.addButton, { paddingBottom: 16 + insets.bottom }]}>
         <Text style={styles.addButtonText}>+ New recipe</Text>
       </Link>
     </View>

@@ -3,6 +3,23 @@ import type { MealPlan } from '../../domain/plan/types';
 import type { Ingredient, Portion } from '../../domain/ingredients/types';
 import type { FileIO } from './fileIO';
 
+// Every repository's read-modify-write sequence against user-data.json must
+// run inside this lock. Two repositories can otherwise both read the same
+// snapshot and each write back a version missing the other's change (a lost
+// update) — or both write the shared user-data.json.tmp path at once and
+// corrupt it. Chaining every operation onto one promise guarantees only one
+// read-modify-write sequence is ever in flight, regardless of which
+// repository triggered it.
+let writeQueue: Promise<unknown> = Promise.resolve();
+
+export function withUserDataLock<T>(operation: () => Promise<T>): Promise<T> {
+  const result = writeQueue.then(operation, operation);
+  // Keep the chain alive even if `operation` rejected — swallow here so a
+  // failed write doesn't permanently wedge every write after it.
+  writeQueue = result.then(() => undefined, () => undefined);
+  return result;
+}
+
 export type UserData = {
   recipes: Recipe[];
   mealPlan: MealPlan;

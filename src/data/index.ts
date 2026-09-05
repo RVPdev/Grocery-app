@@ -3,6 +3,7 @@ import { createRecipeRepository } from './store/recipeRepository';
 import { expoFileIO, userDataDirectory } from './store/expoFileIO';
 import { createUserIngredientRepository, type UserIngredientRepository } from './store/userIngredientRepository';
 import { createLearnedPortionStore, type LearnedPortionStore } from './store/learnedPortionStore';
+import { createPlanRepository, type PlanRepository } from './store/planRepository';
 import {
   resolveIngredient as resolveIngredientWithSources,
   searchAllIngredients as searchAllIngredientsWithSources,
@@ -12,6 +13,8 @@ import { searchIngredients, getIngredientById } from './usda/database';
 
 export type { RecipeRepository } from './store/recipeRepository';
 export { createRecipeRepository } from './store/recipeRepository';
+export type { PlanRepository } from './store/planRepository';
+export { createPlanRepository } from './store/planRepository';
 export { expoFileIO, userDataDirectory } from './store/expoFileIO';
 export type { FileIO } from './store/fileIO';
 export { searchIngredients, getIngredientById } from './usda/database';
@@ -22,6 +25,10 @@ export { searchIngredients, getIngredientById } from './usda/database';
 // documentDirectory lives under the '/legacy' subpath.
 export function createDefaultRecipeRepository(): RecipeRepository {
   return createRecipeRepository(expoFileIO, userDataDirectory);
+}
+
+export function createDefaultPlanRepository(): PlanRepository {
+  return createPlanRepository(expoFileIO, userDataDirectory);
 }
 
 export type { UserIngredientRepository } from './store/userIngredientRepository';

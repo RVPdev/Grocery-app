@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useLocalSearchParams } from 'expo-router';
-import { RecipeEditScreen } from '../../src/ui/screens/RecipeEditScreen';
-import { useDraftRecipe, type DraftIngredientLine } from '../../src/ui/context/DraftRecipeContext';
-import { useRecipes } from '../../src/ui/context/RecipeContext';
-import { useIngredients } from '../../src/ui/context/IngredientContext';
+import { RecipeEditScreen } from '../../../../src/ui/screens/RecipeEditScreen';
+import { useDraftRecipe, type DraftIngredientLine } from '../../../../src/ui/context/DraftRecipeContext';
+import { useRecipes } from '../../../../src/ui/context/RecipeContext';
+import { useIngredients } from '../../../../src/ui/context/IngredientContext';
 
 export default function EditRecipeRoute() {
   const { id } = useLocalSearchParams<{ id: string }>();

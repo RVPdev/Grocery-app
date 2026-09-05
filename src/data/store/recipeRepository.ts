@@ -1,6 +1,6 @@
 import type { Recipe } from '../../domain/recipes/types';
 import type { FileIO } from './fileIO';
-import { readUserData, writeUserData } from './jsonFileStore';
+import { readUserData, writeUserData, withUserDataLock } from './jsonFileStore';
 
 export interface RecipeRepository {
   getAll(): Promise<Recipe[]>;
@@ -14,15 +14,19 @@ export function createRecipeRepository(io: FileIO, dir: string): RecipeRepositor
       const data = await readUserData(io, dir);
       return data.recipes;
     },
-    async save(recipe: Recipe) {
-      const data = await readUserData(io, dir);
-      const others = data.recipes.filter((r) => r.id !== recipe.id);
-      await writeUserData(io, dir, { ...data, recipes: [...others, recipe] });
+    save(recipe: Recipe) {
+      return withUserDataLock(async () => {
+        const data = await readUserData(io, dir);
+        const others = data.recipes.filter((r) => r.id !== recipe.id);
+        await writeUserData(io, dir, { ...data, recipes: [...others, recipe] });
+      });
     },
-    async delete(id: string) {
-      const data = await readUserData(io, dir);
-      const remaining = data.recipes.filter((r) => r.id !== id);
-      await writeUserData(io, dir, { ...data, recipes: remaining });
+    delete(id: string) {
+      return withUserDataLock(async () => {
+        const data = await readUserData(io, dir);
+        const remaining = data.recipes.filter((r) => r.id !== id);
+        await writeUserData(io, dir, { ...data, recipes: remaining });
+      });
     },
   };
 }
