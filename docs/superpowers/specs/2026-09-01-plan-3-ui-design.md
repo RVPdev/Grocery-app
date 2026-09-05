@@ -270,3 +270,37 @@ Per the parent spec's dividing line: Plan 3 (this plan) covers the UI. Task-leve
 sequencing (how many implementation tasks, whether it's one plan or split into
 sequential sub-plans like 3a/3b) is decided by `writing-plans`, not here — this
 document fixes the design, not the task breakdown.
+
+---
+
+## 9. Addendum (2026-09-05): Status Before Plan 3b
+
+Plan 3a (Recipe Book UI) shipped and merged to `main` 2026-09-03, and delivered
+more of this spec's §3/§4 than its own task list named explicitly:
+
+- `RecipeContext`, `IngredientContext`, `resolveIngredient`/`searchAllIngredients`,
+  `UserIngredientRepository`, `LearnedPortionStore` — all built as designed here.
+- The §4 "required fix" (every repository write spreads the existing `UserData`
+  object rather than rebuilding it) is already in place in `recipeRepository.ts`
+  and `userIngredientRepository.ts` — confirmed by reading the current code, not
+  assumed.
+- `UserData.mealPlan` already exists in the schema (`jsonFileStore.ts`), with an
+  empty default (`{ id: 'default', name: 'This Week', meals: [] }`) — so no
+  schema migration is needed for Plan 3b, only a repository to read/write it.
+
+**Not yet built, i.e. Plan 3b's actual remaining scope:** `PlanRepository`,
+`PlanContext`, the `(tabs)/` navigation restructuring (moving Plan 3a's routes
+under `recipes/`, adding `plan/` and `grocery/`), the `plan/index.tsx` and
+`grocery/index.tsx` screens, and the `RECIPE_NOT_FOUND` handling on the Plan
+screen — everything else in this spec is already live.
+
+**New scope this spec didn't anticipate:** Plan 3a's device testing (see
+`docs/superpowers/plans/2026-09-01-recipe-book-ui.md`'s trailing notes) found
+that `jsonFileStore.ts`'s write path (§4) shares one temp filename across every
+repository with no concurrency guard. Harmless with 4 writers serialized by
+`await`, but Plan 3b's `PlanRepository` is a 5th writer, which is when a
+double-tap or two near-simultaneous writes can actually race and corrupt
+`user-data.json`. **Decided:** fix this as part of Plan 3b, not deferred — add
+a write-queue so every write to `user-data.json` serializes regardless of which
+repository triggered it, addressed before or alongside `PlanRepository`'s own
+task since that's the change that makes the race reachable.
